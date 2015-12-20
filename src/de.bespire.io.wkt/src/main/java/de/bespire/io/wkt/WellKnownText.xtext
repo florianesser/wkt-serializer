@@ -1,0 +1,74 @@
+grammar de.bespire.io.wkt.WellKnownText with org.eclipse.xtext.common.Terminals hidden()
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+generate wkt "http://www.bespire.de/io/wkt/WellKnownText"
+
+WKT hidden():
+	wkt += CRS | Axis;
+
+SignedDecimal returns ecore::EDouble: '-'? UnsignedDecimal;
+UnsignedDecimal returns ecore::EDouble: ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')+ '.' ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')*;
+UnsignedInt returns ecore::EInt: ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')+;
+
+//SEIR: (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)?;
+Scope: 'SCOPE' '[' scope=STRING ']';
+Extent: AreaDescription | GeographicBoundingBox | VerticalExtent /*| TemporalExtent*/;
+AreaDescription: 'AREA' '[' areaDescription=STRING ']';
+GeographicBoundingBox: 'BBOX' '[' lowerLeftLatitude=SignedDecimal ',' lowerLeftLongitude=SignedDecimal ',' upperRightLatitude=SignedDecimal ',' upperRightLongitude=SignedDecimal ']';
+VerticalExtent: 'VERTICALEXTENT' '[' minimumHeight=SignedDecimal ',' maximumHeight=SignedDecimal (',' lenghtUnit=Unit)? ']';
+//TemportalExtent: 'TIMEEXTENT' '[' start=DateTimeOrText ',' end=DateTimeOrText ']';
+//DateTimeOrText: DateTime | STRING;
+Identifier: 'ID' '[' authority=STRING ',' (uniqueIdentifierText=STRING | uniqueIdentifierNr=UnsignedInt) (',' (versionText=STRING | versionNr=UnsignedDecimal))? (',' citation=Citation)? (',' uri=URI)? ']';
+Citation: 'CITATION' '[' citation=STRING ']';
+URI: 'URI' '[' uri=STRING ']';
+Remark: 'REMARK' '[' remark=STRING ']';
+
+CRS: GeodeticCRS | VerticalCRS | EngineeringCRS | CompoundCRS | ProjectedCRS;
+GeodeticCRS: ('GEODCRS' | 'GEODETICCRS') '[' name=STRING ',' datum=GeodeticDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+VerticalCRS: ('VERTCRS' | 'VERTICALCRS') '[' name=STRING ',' datum=VerticalDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+EngineeringCRS: ('ENGCRS' | 'ENGINEERINGCRS') '[' name=STRING ',' datum=EngineeringDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+CompoundCRS: 'COMPOUNDCRS' '[' name=STRING ',' horizontalCRS=GeodeticCRS ',' verticalCRS=VerticalCRS (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']'; 
+ProjectedCRS: ('PROJCRS' | 'PROJECTEDCRS') '[' name=STRING ',' baseCRS=BaseGeodeticCRS ',' operation=Conversion ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+BaseGeodeticCRS: 'BASEGEODCRS' '[' name=STRING ',' datum=GeodeticDatum (',' ellipsoidalCoordinateSystemUnit=AngleUnit)? ']';
+
+Datum: GeodeticDatum | EngineeringDatum | VerticalDatum;
+GeodeticDatum: ('DATUM' | 'GEODETICDATUM') '[' name=STRING ',' ellipsoid=Ellipsoid (',' datumAnchor=DatumAnchor)? ']' (',' primeMeridian=PrimeMeridian)?;
+EngineeringDatum: ('EDATUM' | 'ENGINEERINGDATUM') '[' name=STRING ']';
+VerticalDatum: ('VDATUM' | 'VERTICALDATUM') '[' name=STRING ']';
+
+Ellipsoid: ('ELLIPSOID' | 'SPHEROID') '[' name=STRING ',' semiMajorAxis=SignedDecimal ',' inverseFlattening=SignedDecimal (',' lengthUnit=STRING)? ']';
+DatumAnchor: 'ANCHOR' '[' anchorDescription=STRING ']';
+PrimeMeridian: ('PRIMEM' | 'PRIMEMERIDIAN') '[' name=STRING ',' irmLongitude=SignedDecimal (',' angleUnit=STRING)? ']' ;
+
+CoordinateSystem: 'CS' '[' type=CoordinateSystemType ',' dimension=('1' | '2' | '3') ']' (',' axis+=Axis)+ (',' csUnit=Unit)?;
+enum CoordinateSystemType: 
+		AFFINE = 'affine' | CARTESIAN = 'Cartesian' | CYLINDRICAL = 'cylindrical' | ELLIPSOIDAL = 'ellipsoidal' | 
+		LINEAR = 'linear' | PARAMETRIC = 'parametric' | POLAR = 'polar' | SPHERICAL = 'spherical' | TEMPORAL = 'temporal' | VERTICAL = 'vertical';
+
+Axis: 'AXIS' '[' name = STRING ',' direction=AxisDirection (',' order=AxisOrder)? (',' unit=Unit)? ']';
+AxisOrder: 'ORDER' '[' index=UnsignedInt ']';
+AxisDirection:
+	('north' {North} (',' meridian=PrimeMeridian)? | 'northNorthEast' {NorthNorthEast} | 'northEast' {NorthEast} | 'eastNorthEast' {EastNorthEast} | 'east' {East} |  
+	'southEast' {SouthEast} | 'southSouthEast' {SouthSouthEast} | 'south' {South} (',' meridian=PrimeMeridian)? | 'southWest' {SouthWest} | 'southSouthWest' {SouthSouthWest} | 'westSouthWest' {WestSouthWest} | 'west' {West} | 
+	'westNorthWest' {WestNorthWest} | 'northWest' {NorthWest} | 'northNorthWest' {NorthNorthWest} | 'geocentricX' {GeocentricX} | 'geocentricY' {GeocentricY} | 'geocentricZ' {GeocentricZ} |
+	'up' {Up} | 'down' {Down} | 'forward' {Forward} | 'aft' {Aft} | 'port' {Port} | 'starboard' {Starboard} | 'clockwise' {Clockwise} ',' bearing=Bearing | 'counterClockwise' {Counterclockwise} ',' bearing=Bearing | 
+	'columnPositive' {ColumnPositive} | 'columnNegative' {ColumnNegative} |	'rowPositive' {RowPositive} | 'rowNegative' {RowNegative} | 'displayRight' {DisplayRight} | 'displayLeft' {DisplayLeft} | 
+	'displayUp' {DisplayUp} | 'displayDown' {DisplayDown} | 'future' {Future} | 'past' {Past} | 'towards' {Towards} | 'awayFrom' {AwayFrom} | 'unspecified' {UnspecifiedDirection} | 'other' {OtherDirection});
+
+Bearing: 'BEARING' '[' bearing=SignedDecimal ']';
+
+CoordinateOperation: 'COORDINATEOPERATION' '[' name=STRING ',' source=SourceCRS ',' target=TargetCRS ',' method=OperationMethod (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+Conversion: 'CONVERSION' '[' name=STRING ',' method=OperationMethod (',' parameters+=ProjectionParameter)* ']';
+OperationMethod: ('METHOD' | 'PROJECTION') '[' name=STRING ']';
+ProjectionParameter: 'PARAMETER' '[' name=STRING ',' value=SignedDecimal (',' unit=ParameterUnit)? ']';
+ParameterUnit: LengthUnit | AngleUnit | ScaleUnit;
+SourceCRS: 'SOURCECRS' '[' crs=CRS ']';
+TargetCRS: 'TARGETCRS' '[' crs=CRS ']';
+
+Unit: AngleUnit | LengthUnit | ScaleUnit | ParametricUnit | TimeUnit;
+LengthUnit: 'LENGTHUNIT' '[' name=STRING ',' factor=UnsignedDecimal ']'; 
+AngleUnit: 'ANGLEUNIT' '[' name=STRING ',' factor=UnsignedDecimal ']';
+ScaleUnit: 'SCALEUNIT' '[' name=STRING ',' factor=UnsignedDecimal ']';
+ParametricUnit: 'PARAMETRICUNIT' '[' name=STRING ',' factor=UnsignedDecimal ']';
+TimeUnit: 'TIMEUNIT' '[' name=STRING ',' factor=UnsignedDecimal ']';

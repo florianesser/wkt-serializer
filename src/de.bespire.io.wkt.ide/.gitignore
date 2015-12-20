@@ -1,0 +1,9 @@
+.settings
+.externalToolBuilders
+.classpath
+target
+bin
+src/main/xtend-gen
+src/main/xtext-gen
+src/test/xtend-gen
+src/test/xtext-gen
