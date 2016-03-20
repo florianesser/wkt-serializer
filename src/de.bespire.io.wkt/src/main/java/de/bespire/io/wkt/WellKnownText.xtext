@@ -5,7 +5,7 @@ import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 generate wkt "http://www.bespire.de/io/wkt/WellKnownText"
 
 WKT hidden():
-	wkt += CRS | Axis;
+	wkt += CRS;
 
 SignedDecimal returns ecore::EDouble: '-'? UnsignedDecimal;
 UnsignedDecimal returns ecore::EDouble: ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')+ '.' ('0'|'1'|'2'|'3'|'4'|'5'|'6'|'7'|'8'|'9')*;
@@ -24,12 +24,12 @@ Citation: 'CITATION' '[' citation=STRING ']';
 URI: 'URI' '[' uri=STRING ']';
 Remark: 'REMARK' '[' remark=STRING ']';
 
-CRS: GeodeticCRS | VerticalCRS | EngineeringCRS | CompoundCRS | ProjectedCRS;
-GeodeticCRS: ('GEODCRS' | 'GEODETICCRS') '[' name=STRING ',' datum=GeodeticDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
-VerticalCRS: ('VERTCRS' | 'VERTICALCRS') '[' name=STRING ',' datum=VerticalDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
-EngineeringCRS: ('ENGCRS' | 'ENGINEERINGCRS') '[' name=STRING ',' datum=EngineeringDatum ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
-CompoundCRS: 'COMPOUNDCRS' '[' name=STRING ',' horizontalCRS=GeodeticCRS ',' verticalCRS=VerticalCRS (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']'; 
-ProjectedCRS: ('PROJCRS' | 'PROJECTEDCRS') '[' name=STRING ',' baseCRS=BaseGeodeticCRS ',' operation=Conversion ',' coordinateSystem=CoordinateSystem (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)? ']';
+CRS: (GeodeticCRS | VerticalCRS | EngineeringCRS | CompoundCRS | ProjectedCRS) (',' scope=Scope)? (',' extent=Extent)? (',' identifier=Identifier)? (',' remark=Remark)?;
+GeodeticCRS: ('GEODCRS' | 'GEODETICCRS') '[' name=STRING ',' datum=GeodeticDatum ',' coordinateSystem=CoordinateSystem ']';
+VerticalCRS: ('VERTCRS' | 'VERTICALCRS') '[' name=STRING ',' datum=VerticalDatum ',' coordinateSystem=CoordinateSystem ']';
+EngineeringCRS: ('ENGCRS' | 'ENGINEERINGCRS') '[' name=STRING ',' datum=EngineeringDatum ',' coordinateSystem=CoordinateSystem ']';
+CompoundCRS: 'COMPOUNDCRS' '[' name=STRING ',' horizontalCRS=GeodeticCRS ',' verticalCRS=VerticalCRS ']'; 
+ProjectedCRS: ('PROJCRS' | 'PROJECTEDCRS') '[' name=STRING ',' baseCRS=BaseGeodeticCRS ',' operation=Conversion ',' coordinateSystem=CoordinateSystem ']';
 BaseGeodeticCRS: 'BASEGEODCRS' '[' name=STRING ',' datum=GeodeticDatum (',' ellipsoidalCoordinateSystemUnit=AngleUnit)? ']';
 
 Datum: GeodeticDatum | EngineeringDatum | VerticalDatum;
