@@ -4,7 +4,7 @@ mkdir -p dist
 rm -f dist/*
 
 cd src/de.bespire.io.wkt
-mvn -Dmaven.test.skip=true clean compile package
+mvn -B -Dmaven.test.skip=true clean compile package
 cp target/*.jar ../../dist
 cd ../..
 
