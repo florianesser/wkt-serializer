@@ -2,3 +2,4 @@
 **/rebel.xml
 **/.classpath
 dist/
+*.iml
